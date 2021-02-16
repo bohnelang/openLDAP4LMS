@@ -1,0 +1,281 @@
+#!/usr/bin/php -q
+<?php
+
+###############################################
+# Openeldap ALMA backend in php 
+# for searching data in a library system 
+# and sending back to openldap
+# 
+# Andreas Bohne-Lang, 2020
+#
+# Copyright by CC0
+#
+
+# Best thanks for providing a free restful api sandbox! 
+
+#
+# https://developers.exlibrisgroup.com/console/?url=/wp-content/uploads/alma/openapi/users.json
+#
+#Europe		https://api-eu.hosted.exlibrisgroup.com
+#North America	https://api-na.hosted.exlibrisgroup.com
+#Asia Pacific	https://api-ap.hosted.exlibrisgroup.com
+#Canada		https://api-ca.hosted.exlibrisgroup.com
+#China		https://api-cn.hosted.exlibrisgroup.com
+#$ALMA_SERVER = "api-eu.hosted.exlibrisgroup.com";               // European
+#$ALMA_APIKEY = "l7xx2af7939c63424511946e0fcdc35fe22a";          // official demo key - readonly
+
+# Gobal defines fpr YOUR account 
+#
+# These data are demo data
+include ('credentialsx.php');
+
+#----------------------------------------------------------------------------------------------------------
+
+function print_lr($arr,$display="") {
+  foreach ($arr as $key => $value)  
+    (is_array($value)||is_object($value))?print_lr($value, sprintf("%s[%s]",$display,$key)):printf("%s[%s]=%s\n",$display,$key,$value);
+}
+
+
+function parseFilterandgetattr($filter,$attr)
+{
+# Thunderbird: 	filter=(|(cn=mysteri*)(mail=mysteri*)(sn=mysteri*))
+#		attr=cn commonname mail objectClass
+
+	if (preg_match('/\('.$attr.'=[^\)]*\)/i', $filter, $matches)) {
+		return $matches[0];
+	} 
+
+	return "";
+}
+
+function fetchdatefromlibrarysystem($filter,$basedn="")
+{
+	global $ALMA_SERVER, $ALMA_APIKEY;
+
+	$return_records = array();
+	$primary_id 	= array();
+
+	$usersearch  = parseFilterandgetattr($filter,"sn");	
+
+	$usersearch=stristr($usersearch,"=");						// Find String after first =
+
+	$usersearch=substr($usersearch,1,-1); 					// Remove ) at end of string 
+
+	$usersearch=str_replace("*","",$usersearch);
+
+	#---------------------------------------------------------------------------------
+
+	## Search  and get list of primara-ids 
+	$burl=sprintf("https://%s/almaws/v1/users?format=json&limit=15&offset=0&order_by=primary_id&apikey=%s",$ALMA_SERVER,$ALMA_APIKEY); 
+
+	## user by lastname  
+	$url = $burl . "&q=" . urlencode(sprintf("last_name~%s", $usersearch));
+	$almausersearchresult=@file_get_contents( $url );
+	$almausersearchresult_ar = json_decode($almausersearchresult,TRUE);
+
+	# user by id
+	$url = $burl . "&q=" . urlencode(sprintf("primary_id~%s", $usersearch));
+        $almausersearchresult=@file_get_contents( $url );
+        $almausersearchresult_ar2 =  json_decode($almausersearchresult,TRUE);
+
+
+	$almausersearchresult_ar["user"]= array_merge ($almausersearchresult_ar["user"], $almausersearchresult_ar2["user"]);
+	$almausersearchresult_ar["total_record_count"] = count($almausersearchresult_ar["user"]);
+
+
+	foreach( $almausersearchresult_ar["user"] as $user_val){ $piid = $user_val["primary_id"]; $primary_id[$piid] = $piid; }
+
+
+	#----------------------------------------------------------------------------------
+	
+	# Fetch details for the found userr
+	foreach($primary_id as $primary_id_val){
+		$url=sprintf("https://%s/almaws/v1/users/%s?format=json&apikey=%s&?user_id_type=all_unique&view=full&expand=none", $ALMA_SERVER, $primary_id_val, $ALMA_APIKEY);		
+
+		$almauserresult=@file_get_contents( $url );
+
+		$user_val = json_decode($almauserresult,TRUE);
+
+		$trec=array();
+
+		$trec["libid"]			= isset($user_val["linking_id"])?$user_val["linking_id"]:$primary_id_val;	
+		$trec["firstname"]		= isset($user_val["first_name"])?$user_val["first_name"]:"";
+		$trec["surename"]		= isset($user_val["last_name"])?$user_val["last_name"]:"(empty)";
+		$trec["email1"]			= isset($user_val["contact_info"]["email"][0]["email_address"])?$user_val["contact_info"]["email"][0]["email_address"]:"";
+		$trec["email2"]			= isset($user_val["contact_info"]["email"][1]["email_address"])?$user_val["contact_info"]["email"][1]["email_address"]:"";
+		$trec["plaintext_password"]	= isset($user_val["pin_number"])?$user_val["pin_number"]:"";
+
+		$trec["employeeType"]		=  isset($user_val["account_type"]["value"])?$user_val["account_type"]["value"]:"none";
+		$trec["organizationalStatus"]	=  isset($user_val["status"]["value"])?$user_val["status"]["value"]:"none"; 
+
+		if(isset($user_val["expiry_date"])){
+			if( isset($user_val["status"]["value"]) && strtolower($user_val["status"]["value"])=="active"){
+				$trec["expiry_date"]		= substr($user_val["expiry_date"],0,4).substr($user_val["expiry_date"],5,2).substr($user_val["expiry_date"],8,2)."235959Z";
+			} else {
+				$trec["expiry_date"] = "20020202200202Z";
+			}
+		}
+		
+	
+		#print_lr($trec);
+		#echo "----------------------\n";
+
+		$return_records[] = $trec;
+	}
+	return $return_records;
+}
+
+function mapandsenddatatoldap($data,$basedn)
+{
+
+	####
+	#### Here you map the library data to the openldap schema
+	#### Only use attributes from official schemas 
+	#### See slapd what you include 
+	#### Normally this attributes are necessary: 	
+	####	core.schema e.g.	: https://github.com/openshift/openldap/blob/master/2.4.41/contrib/config/schema/core.schema
+	####	cosine.schema		: https://github.com/openshift/openldap/blob/master/2.4.41/contrib/config/schema/cosine.schema
+	####	inetorgperson.schema	: https://github.com/openshift/openldap/blob/master/2.4.41/contrib/config/schema/inetorgperson.schema
+	####	officePerson		: http://www.yolinux.com/TUTORIALS/LinuxTutorialLDAP-GILSchemaExtension.html
+	####	mozillaAddressBookEntry : https://developer.mozilla.org/en-US/docs/Mozilla/Thunderbird/LDAP_Support
+	####
+	####    eduPerson               : https://github.com/REFEDS/eduperson/blob/master/schema/openldap/eduperson.ldif
+
+	####	class person: Must: cn, sn // May: userPassword $ telephoneNumber $ seeAlso $ description	
+	#### 	class organizationalPerson: May: title $ x121Address $ registeredAddress $ destinationIndicator $ preferredDeliveryMethod $ telexNumber $ teletexTerminalIdentifier $ telephoneNumber $ internationaliSDNNumber $ facsimileTelephoneNumber $ street $ postOfficeBox $ postalCode $ postalAddress $ physicalDeliveryOfficeName $ ou $ st $ l
+	### 	class inetOrgPerson: MAY: audio $ businessCategory $ carLicense $ departmentNumber $ displayName $ employeeNumber $ employeeType $ givenName $ homePhone $ homePostalAddress $ initials $ jpegPhoto $ labeledURI $ mail $ manager $ mobile $ o $ pager $ photo $ roomNumber $ secretary $ uid $ userCertificate $ x500uniqueIdentifier $ preferredLanguage $ userSMIMECertificate $ userPKCS12
+	###	class officePerson: MAY: c $ rdn $ otherFacsimiletelephoneNumber $ IPPhone $ comment $ reports $ conferenceInformation 
+	### 	class mozillaAddressBookEntry: MAY: Custom1 $ Custom2 $ Custom3 $ Custom4 $  xmozillaNickname $ xmozillaSecondeMail $ xmozillausehtmlmail $ nsAIMid 
+	
+	### You need to map YOU data to the official ldap attributes:
+	### 	E.g.: Your library system sends the attribute 'surename' back. Thus you map 'surename' to openldap attribute 'sn'
+	###	'firstname' to 'givenName'
+	###	'email1' to 'mail'
+	###	'email2' to mail'
+	###	'libid' to 'uid' 
+	### 	and so on
+	###
+	###	Keep in mind some openldap schema attributed are *mandatory* !!!  
+	###
+	
+	foreach($data as $ind => $val)
+	{
+		if( ! empty( $val["email1"] )){
+		printf("dn: uid=%s,%s\n",$val['libid'], $basedn);
+                printf("objectClass: top\n");
+                printf("objectClass: person\n");
+                printf("objectClass: organizationalPerson\n");
+		printf("objectClass: inetOrgPerson\n");
+                printf("objectClass: officePerson\n");
+                printf("objectClass: mozillaAddressBookEntry\n");
+                printf("objectClass: ndsLoginProperties\n");
+		printf("uid: %s\n", $val['libid']);
+                printf("ou: library\n");
+                printf("departmentNumber: lms\n");
+                printf("cn:: %s\n",base64_encode(sprintf("%s %s %s",isset($val['surename'])?$val['surename']:"",isset($val['firstname'])?$val['firstname']:"", $val['libid'])));
+                printf("displayName:: %s\n",base64_encode(sprintf("%s %s %s",isset($val['surename'])?$val['surename']:"",isset($val['firstname'])?$val['firstname']:"", $val['libid'])));
+                if( isset($val["surename"])     && ! empty($val["surename"]))   printf("sn:: %s\n",  base64_encode($val['surename'])); else printf("sn: %s\n", $val['libid']);
+                if( isset($val["firstname"])    && ! empty($val["firstname"]))  printf("givenName:: %s\n", base64_encode($val['firstname']));
+                if( isset($val["email1"])       && ! empty($val["email1"]))     printf("mail: %s\n", $val["email1"]);
+                if( isset($val["email2"])       && ! empty($val["email2"]))     printf("xmozillasecondemail: %s\n", $val["email2"]);
+                #if( isset($val["plaintext_password"])   && ! empty($val["plaintext_password"])) printf("userPassword: {MD5}%s\n", md5($val["plaintext_password"]));
+
+		if( isset($val["employeeType"]))	 printf("employeeType: %s\n", $val["employeeType"]);
+		if( isset($val["organizationalStatus"])) printf("organizationalStatus: %s\n", $val["organizationalStatus"]);
+
+		if( isset($val["expiry_date"]) && !empty( $val["expiry_date"]) ){ 	
+			printf("passwordExpirationTime: %s\n", $val["expiry_date"]);
+		} else {
+			printf("passwordExpirationTime: 19700101000000Z\n");
+		}
+		printf("loginGraceRemaining: 0\n");
+		
+                printf("\n");
+		}	
+	}
+
+
+}
+
+
+function main()
+{
+
+	$log=false;
+
+	$basedn=$filter="";
+
+/*
+These are some parameter coming by STDIN 
+
+SEARCH
+msgid: 2
+suffix: dc=lms,dc=library
+base: dc=lms,dc=library
+scope: 2
+deref: 0
+sizelimit: 500
+timelimit: 3600
+filter: (sn=Mysteri)
+attrsonly: 0
+*/
+
+	#### This demo use two of this set only.
+
+        while ($line = fgets(STDIN)) {
+		$tt=explode(":",trim($line));
+		if(isset( $tt[0] )){ 
+			$tag =  $tt[0];
+			unset( $tt[0] );
+			$value=implode("",$tt);
+                	if( $tag=="base" ) $basedn=trim($value);
+                	if( $tag=="filter" ) $filter=trim($value);
+		}
+        }
+
+
+	$datafromlibsystem = fetchdatefromlibrarysystem($filter,$basedn);
+
+	mapandsenddatatoldap($datafromlibsystem,$basedn);
+
+	echo "RESULT\n";
+	echo "code: 0\n";
+
+	if( $log ) {
+		$fp=fopen("/tmp/ol-lib-backend.log","w");
+		fputs($fp,sprintf("base=%s filter=%s \n",$basedn,$filter));
+		fputs($fp,"----------------------\n");
+		fclose($fp);
+	} 
+
+}
+
+
+##########################
+
+/* 
+
+Run a test like this:
+
+./search_library <<_EOF_
+SEARCH
+msgid: 2
+suffix: dc=lms,dc=library
+base: dc=lms,dc=library
+scope: 2
+deref: 0
+sizelimit: 500
+timelimit: 3600
+filter: (&(|(mail=smith*)(cn=smith*)(sn=smith*)(givenName=smith*)(displayName=smith*)))
+attrsonly: 0
+_EOF_
+
+filter: (&(objectClass=*)(|(cn=smith*)(mail=smith*)(sn=smith*))) 
+*/
+
+main();
+
+exit(0);
+
+?>

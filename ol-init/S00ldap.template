@@ -1,0 +1,75 @@
+#!/bin/bash
+
+d=`pwd`
+
+BASE=##CHDI##
+
+bin=$BASE/libexec/
+pidfile=$BASE/var/run/slapd.pid
+
+
+#
+# start/stop   daemon
+#
+case $1 in
+start)
+    	echo "Start LDAP nomal"
+	$bin/slapd &
+    	;;
+
+debug)
+	echo "Start LDAP debug"		
+	$bin/slapd -d -1 &
+	;;
+
+debugbackend)
+        echo "Start LDAP debug"
+        $bin/slapd -d 1024 &
+        ;;
+
+
+sstart)
+        echo "Start LDAP secure nomal"
+        $bin/slapd -h "ldaps://0.0.0.0/" &
+        ;;
+
+sdebug)
+        echo "Start LDAP secure debug"
+        $bin/slapd -d 255 -h "ldaps://0.0.0.0/"&
+        ;;
+
+show_certs)
+	echo "Zertifikate zeigen"
+	openssl s_client -connect localhost:636 -showcerts
+	;;
+
+stop)
+        echo "Stopp LDAP"
+	if test -e $pidfile; then
+		kill `cat $pidfile`
+	fi
+    	;;
+restart)
+	echo "Restart Ldap"
+	if test -e $pidfile; then
+		kill `cat $pidfile`
+	fi
+	$bin/slapd &
+	;;
+test)
+	echo " Teste Config file "
+	$bin/slapd -t &
+	;;
+check)
+	echo "Check LDAP "
+	ldapsearch -x -b '' -s base '(objectclass=*)' namingContexts
+	;;
+*)
+  	exit 1
+  	;;
+esac
+
+cd $d
+
+# ---------------------------------------------------------------------
+exit 0

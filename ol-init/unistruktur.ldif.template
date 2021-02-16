@@ -1,0 +1,19 @@
+dn: dc=lms,dc=library
+objectClass: dcObject
+objectClass: top
+objectClass: organization
+o: library
+dc: lms
+
+
+dn: cn=superuser,dc=lms,dc=library
+objectClass: Person
+cn: superuser
+sn: root
+
+dn: cn=query,dc=lms,dc=library
+cn: query
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+userPassword: ##libpasswd## 
+

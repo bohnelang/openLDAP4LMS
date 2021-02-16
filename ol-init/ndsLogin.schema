@@ -1,0 +1,189 @@
+attributeType   ( 2.16.840.1.113719.1.1.4.1.25
+        NAME    'groupMembership'
+        DESC    'groupMembership'
+        SUP  distinguishedName )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.39
+        NAME    'loginAllowedTimeMap'
+        DESC    'loginAllowedTimeMap'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.40 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.40
+        NAME    'loginDisabled'
+        DESC    'loginDisabled'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.7  )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.41
+        NAME    'loginExpirationTime'
+        DESC    'loginExpirationTime'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.24 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.42
+        NAME    'loginGraceLimit'
+        DESC    'loginGraceLimit'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.27 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.43
+        NAME    'loginGraceRemaining'
+        DESC    'loginGraceRemaining'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.27 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.44
+        NAME    'loginIntruderAddress'
+        DESC    'loginIntruderAddress'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.45
+        NAME    'loginIntruderAttempts'
+        DESC    'loginIntruderAttempts'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.47
+        NAME    'loginIntruderResetTime'
+        DESC    'loginIntruderResetTime'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.24 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.48
+        NAME    'loginMaximumSimultaneous'
+        DESC    'loginMaximumSimultaneous'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.49
+        NAME    'loginScript'
+        DESC    'loginScript'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.5  )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.50
+        NAME    'loginTime'
+        DESC    'loginTime'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.24 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.56
+        NAME    'networkAddressRestriction'
+        DESC    'networkAddressRestriction'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.55
+        NAME    'networkAddress'
+        DESC    'networkAddress'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.65
+        NAME    'passwordsUsed'
+        DESC    'passwordsUsed'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.66
+        NAME    'passwordAllowChange'
+        DESC    'passwordAllowChange'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.7  )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.67
+        NAME    'passwordExpirationInterval'
+        DESC    'passwordExpirationInterval'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.27 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.68
+        NAME    'passwordExpirationTime'
+        DESC    'passwordExpirationTime'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.24 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.69
+        NAME    'passwordMinimumLength'
+        DESC    'passwordMinimumLength'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.27 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.70
+        NAME    'passwordRequired'
+        DESC    'passwordRequired'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.7  )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.71
+        NAME    'passwordUniqueRequired'
+        DESC    'passwordUniqueRequired'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.7  )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.82
+        NAME    'privateKey'
+        DESC    'privateKey'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.83
+        NAME    'profile'
+        DESC    'profile'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.84
+        NAME    'publicKey'
+        DESC    'publicKey'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.92
+        NAME    'securityEquals'
+        DESC    'securityEquals'
+        EQUALITY distinguishedNameMatch
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.12 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.1
+        NAME    'accountBalance'
+        DESC    'accountBalance'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.4
+        NAME    'allowUnlimitedCredit'
+        DESC    'allowUnlimitedCredit'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.7  )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.54
+        NAME    'minimumAccountBalance'
+        DESC    'minimumAccountBalance'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.34
+        NAME    'language'
+        DESC    'language'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.37
+        NAME    'lockedByIntruder'
+        DESC    'lockedByIntruder'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.7  )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.96
+        NAME    'serverHolds'
+        DESC    'serverHolds'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.35
+        NAME    'lastLoginTime'
+        DESC    'lastLoginTime'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.24 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.116
+        NAME    'higherPrivileges'
+        DESC    'higherPrivileges'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.165
+        NAME    'securityFlags'
+        DESC    'securityFlags'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.171
+        NAME    'profileMembership'
+        DESC    'profileMembership'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType   ( 2.16.840.1.113719.1.1.4.1.178
+        NAME    'timezone'
+        DESC    'timezone'
+        SYNTAX  1.3.6.1.4.1.1466.115.121.1.26 )
+
+
+objectClass ( 2.16.840.1.113719.1.1.6.1.33 
+ NAME 'ndsLoginProperties'
+ SUP InetOrgPerson
+ STRUCTURAL  
+ MAY ( groupMembership $ loginAllowedTimeMap $ loginDisabled $ loginExpirationTime $ loginGraceLimit $ loginGraceRemaining $ loginIntruderAddress $ loginIntruderAttempts $ loginIntruderResetTime $ loginMaximumSimultaneous $ loginScript $ loginTime $ networkAddressRestriction $ networkAddress $ passwordsUsed $ passwordAllowChange $ passwordExpirationInterval $ passwordExpirationTime $ passwordMinimumLength $ passwordRequired $ passwordUniqueRequired  $ privateKey $ profile $ publicKey $ securityEquals $ accountBalance $ allowUnlimitedCredit $ minimumAccountBalance $ language $ lockedByIntruder $ serverHolds $ lastLoginTime $ higherPrivileges $ securityFlags $ profileMembership $ timezone )
+ )
+

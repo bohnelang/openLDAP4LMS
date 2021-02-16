@@ -1,0 +1,10 @@
+**/ol-init/slapd.conf 
+**/ol-init/unistruktur.ldif
+**/ol-init/S00ldap
+**/ol-init/ldapsearch_example
+**/ol-init/passwoerter.txt
+**/mydoc
+**/credentials*
+**/openldap-2.3.32
+**/openssl-0.9.8a
+**/db-4.4.20

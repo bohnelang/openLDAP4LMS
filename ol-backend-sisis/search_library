@@ -1,0 +1,249 @@
+#!/usr/bin/php -q
+<?php
+
+###############################################
+# Openeldap sisis backend in php 
+# for searching data in Sisis Sunrise  library system 
+# and sending back to openldap
+# 
+# Andreas Bohne-Lang, 2020
+#
+# Copyright by CC0
+#
+
+
+function query_library_system($filter){
+
+        $rval= array();
+
+	if( strlen($filter)<=3) return $rval;
+
+	include("credentialsx.php");
+ 
+	try {
+		$dbh = new PDO(sprintf("odbc:DRIVER=FreeTDS;SERVERNAME=%s;DATABASE=%s", $db_tdbs_con, $db_name), $db_login, $db_password);
+	} catch (PDOException $exc) {
+		echo $exc->getMessage();
+	}
+
+	#echo "Connection established\n";
+
+	$sql= sprintf("SELECT d02bnr as BenutzerNummer,d02name as Nachname,d02vname as Vorname,d02ozeile as EMail1,d02awdatum as Ausweisende,d02bg as Benutzergruppe, d02sp1 as Sperre  FROM sisis.sisis.d02ben INNER JOIN sisis.sisis.d02onl ON d02bnr = d02obnr  WHERE d02oart=1 AND (lower(d02name) like '%s%%' OR d02bnr='%s')",strtolower($filter),$filter);
+
+
+	if(empty($dbh)) die("Connot open $db_tdbs_con");
+
+	#echo "$sql\n";
+	try {
+		$query_result = $dbh->query($sql,PDO::FETCH_ASSOC);
+		#print_r($dbh->errorInfo());
+	} catch (PDOException $exc) {
+                echo $exc->getMessage();
+        }
+
+	if($query_result) $rval = $query_result-> fetchAll(); 
+
+	#print_r( $rval ); 
+
+        return $rval;
+}
+
+function parseFilterandgetattr($filter,$attr)
+{
+# Thunderbird:  filter=(|(cn=mysteri*)(mail=mysteri*)(sn=mysteri*))
+#               attr=cn commonname mail objectClass
+
+        if (preg_match('/\('.$attr.'=[^\)]*\)/i', $filter, $matches)) {
+                return $matches[0];
+        }
+
+        return "";
+}
+
+
+function fetchdatefromlibrarysystem($filter,$basedn="")
+{
+
+	$return_records = array();
+
+	####
+	#### Here your implement your code that fetch data from library system
+	####
+	#### In $filter you get the openldap attribute what and where to search 
+	#### e.g. cn=Smith or sn=Smith 
+	#### 
+	#### For beginning ignore the openldap attribute and take the search value only
+	####
+	#### For experts: You can implement complex searches but you need take care of parsing the filter
+	####	if you get a filter like this (&(sn=Smith)(o=Bio*)) you need to implement the parsing and logic :)
+	####	Have fun ...
+	####
+	#### Attention: the submitted filter is in lower case
+	####
+      	$usersearch  = parseFilterandgetattr($filter,"sn");
+
+        $usersearch=stristr($usersearch,"=");                                         // Find String after first =
+
+        $usersearch=substr($usersearch,1,-1);                                         // Remove ) at end of string
+
+	$usersearch=str_replace("*","",$usersearch);
+
+	# We use wildcards if there are any	
+
+	$returndata = query_library_system($usersearch);
+
+	return $returndata ;
+}
+
+function mapandsenddatatoldap($data,$basedn)
+{
+
+	####
+	#### Here you map the library data to the openldap schema
+	#### Only use attributes from official schemas 
+	#### See slapd what you include 
+	#### Normally this attributes are necessary: 	
+	####	core.schema e.g.	: https://github.com/openshift/openldap/blob/master/2.4.41/contrib/config/schema/core.schema
+	####	cosine.schema		: https://github.com/openshift/openldap/blob/master/2.4.41/contrib/config/schema/cosine.schema
+	####	inetorgperson.schema	: https://github.com/openshift/openldap/blob/master/2.4.41/contrib/config/schema/inetorgperson.schema
+        ####    officePerson            : http://www.yolinux.com/TUTORIALS/LinuxTutorialLDAP-GILSchemaExtension.html
+        ####    mozillaAddressBookEntry : https://developer.mozilla.org/en-US/docs/Mozilla/Thunderbird/LDAP_Support
+
+	####
+	####    eduPerson               : https://github.com/REFEDS/eduperson/blob/master/schema/openldap/eduperson.ldif
+	####	dfnEduPerson		: https://download.aai.dfn.de/schema/dfneduperson-1.4.schema.txt	
+
+	####	class person: Must: cn, sn // May: userPassword $ telephoneNumber $ seeAlso $ description	
+	#### 	class organizationalPerson: May: title $ x121Address $ registeredAddress $ destinationIndicator $ preferredDeliveryMethod $ telexNumber $ teletexTerminalIdentifier $ telephoneNumber $ internationaliSDNNumber $ facsimileTelephoneNumber $ street $ postOfficeBox $ postalCode $ postalAddress $ physicalDeliveryOfficeName $ ou $ st $ l
+	### 	class inetOrgPerson: MAY: audio $ businessCategory $ carLicense $ departmentNumber $ displayName $ employeeNumber $ employeeType $ givenName $ homePhone $ homePostalAddress $ initials $ jpegPhoto $ labeledURI $ mail $ manager $ mobile $ o $ pager $ photo $ roomNumber $ secretary $ uid $ userCertificate $ x500uniqueIdentifier $ preferredLanguage $ userSMIMECertificate $ userPKCS12
+	
+	### You need to map YOU data to the official ldap attributes:
+	### 	E.g.: Your library system sends the attribute 'surename' back. Thus you map 'surename' to openldap attribute 'sn'
+	###	'firstname' to 'givenName'
+	###	'email1' to 'mail'
+	###	'email2' to mail'
+	###	'libid' to 'uid' 
+	### 	and so on
+	###
+	###	Keep in mind some openldap schema attributed are *mandatory* !!!  
+	###
+	
+	foreach($data as $ind => $val)
+	{
+		printf("dn: uid=%s,%s\n",$val['BenutzerNummer'], $basedn);
+                printf("objectClass: top\n");
+                printf("objectClass: person\n");
+                printf("objectClass: organizationalPerson\n");
+                printf("objectClass: inetOrgPerson\n");
+                printf("objectClass: officePerson\n");
+                printf("objectClass: mozillaAddressBookEntry\n");
+                printf("objectClass: ndsLoginProperties\n");
+
+                printf("uid: %s\n", $val['BenutzerNummer']);
+                printf("ou: library\n");
+                printf("departmentNumber: lms\n");
+
+		# For mail programs 
+                printf("cn:: %s\n",base64_encode(sprintf("%s %s %s",isset($val['Nachname'])?$val['Nachname']:"",isset($val['Vorname'])?$val['Vorname']:"", $val['BenutzerNummer'])));
+                printf("displayName:: %s\n",base64_encode(sprintf("%s %s %s",isset($val['Nachname'])?$val['Nachname']:"",isset($val['Vorname'])?$val['Vorname']:"", $val['BenutzerNummer'])));
+                if( isset($val["Nachname"])   && ! empty($val["Nachname"]))   printf("sn:: %s\n",  base64_encode($val['Nachname'])); else printf("sn: %s\n", $val['BenutzerNummer']);
+                if( isset($val["Vorname"])    && ! empty($val["Vorname"]))  printf("givenName:: %s\n", base64_encode($val['Vorname']));
+                if( isset($val["EMail1"])     && ! empty($val["EMail1"]))     printf("mail: %s\n", $val["EMail1"]);
+
+		# For IDPs 
+		$pet = substr( $val["Ausweisende"],0,4).substr( $val["Ausweisende"],5,2).substr( $val["Ausweisende"],8,2)."235959Z";	
+                if( isset($val["Ausweisende"])  &&  ! empty($val["Ausweisende"])){     
+			if( isset($val["Sperre"])  &&  intval($val["Sperre"])==0 ){
+			 	printf("passwordExpirationTime: %s\n", $pet);
+			} else {
+				printf("passwordExpirationTime: 20020202200202Z\n");
+			}
+		}		
+                printf("loginGraceRemaining: 0\n");
+		
+                printf("\n");
+
+	}
+
+
+}
+
+
+function main()
+{
+
+	$log=false;
+
+	$basedn=$filter="";
+
+/*
+These are some parameter coming by STDIN 
+
+SEARCH
+msgid: 2
+suffix: dc=ldap,dc=lms,dc=library
+base: dc=ldap,dc=lms,dc=library
+scope: 2
+deref: 0
+sizelimit: 500
+timelimit: 3600
+filter: (sn=Mysteri)
+attrsonly: 0
+*/
+
+	#### This demo use two of this set only.
+
+ 	while ($line = fgets(STDIN)) {
+                $tt=explode(":",trim($line));
+                if(isset( $tt[0] )){
+                        $tag =  $tt[0];
+                        unset( $tt[0] );
+                        $value=implode("",$tt);
+                        if( $tag=="base" ) $basedn=trim($value);
+                        if( $tag=="filter" ) $filter=trim($value);
+                }
+        }
+
+
+	$datafromlibsystem = fetchdatefromlibrarysystem($filter,$basedn);
+
+	mapandsenddatatoldap($datafromlibsystem,$basedn);
+
+	echo "RESULT\n";
+	echo "code: 0\n";
+
+
+	if( $log ) {
+		$fp=fopen("/tmp/ol-lib-backend.log","w");
+		fputs($fp,sprintf("base=%s filter=%s \n",$basedn,$filter));
+		fputs($fp,"----------------------\n");
+		fclose($fp);
+	} 
+
+}
+
+
+##########################
+
+/* 
+Run a test like this:
+
+./search_library <<_EOF_
+SEARCH
+msgid: 2
+suffix: dc=lms,dc=library
+base: dc=lms,dc=library
+scope: 2
+deref: 0
+sizelimit: 500
+timelimit: 3600
+filter: (&(objectClass=*)(|(cn=Meier*)(mail=Meier*)(sn=Meier*))) 
+attrsonly: 0
+_EOF_
+*/
+
+main();
+
+exit(0);
+
+?>
