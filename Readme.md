@@ -29,23 +29,26 @@ In 2007 I developed an openLDAP shell backend that implements the functionality 
    - Search: lastname
    - Tested: ready to use
    - Demo available: native (search for "Smith")
-- **SISIS Sunrise**: Retrieval via Sybase DB-Login (with freeTDS) and SQL
-   - Search: lastname (wildcard) or user-ID (Benutzernummer) 
-   - Demo/Testserver available: no 
-   - Tested (with real system): ready to use
-- **ALMA**: Login via  RESTful API and API-Key
-   - Search: lastname (wildcard) and primary_id
-   - Demo/Testserver available: yes (online sandbox, search for "Smith") 
-   - Tested (with demo system): ready to use
 - **FOLIO**: Retrieval via API
    - Search: lastname (wildcard), username (wildcard) or  barcode
    - Demo/Testserver available: yes (online demo server, serach for "Smith" or  "Kuhlman")
    - Tested (with demo system): ready to use
+- **ALMA**: Login via  RESTful API and API-Key
+   - Search: lastname (wildcard) and primary_id
+   - Demo/Testserver available: yes (online sandbox, search for "Smith") 
+   - Tested (with demo system): ready to use
+- **SISIS Sunrise**: Retrieval via Sybase DB-login (with freeTDS) and SQL
+   - Search: lastname (wildcard) or user-ID (Benutzernummer) 
+   - Demo/Testserver available: no 
+   - Tested (with real system): ready to use
+- **KOHA**: Retrieval via MySQL DB-login
+   - Search: lastname (wildcard), cardnumber or userid
+   - Demo/Testserver available: no
+   - Tested: Beta - should work.
 - **PAIA-API**: Patrons Account Information API - need a special patron login with client credentials (this is not a normal login)
    - Search: Patron identifier 
    - Demo/Testserver available: not public (on demand)
    - Tested (with GBV demo system): ready to use
-- **KOHA**: not yet developed
 - **WMS**: not yet developed
 - **Other systems**: not yet developed
 
@@ -177,6 +180,7 @@ dc=lms,dc=library
 **Loads of thanks to**
 - PAIA  (GBV - Gemeinsamer Bibliotheksverbund): *Magdalena Roos, Jürgen Hofmann, Jakob Voß*
 - FOLIO (hbz - Hochschulbibliothekszentrum NRW):  *Ingolf Kuss, Meike Osters*
+- KOHA (TH-Köln): *Simon Brenner*
 
 ## Glossary:
 - LMS: Library Management System
