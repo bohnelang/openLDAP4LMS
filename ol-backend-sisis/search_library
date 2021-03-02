@@ -27,7 +27,8 @@ function query_library_system($filter){
 	}
 
 	#echo "Connection established\n";
-
+	
+	
 	$sql= sprintf("SELECT d02bnr as BenutzerNummer,d02name as Nachname,d02vname as Vorname,d02ozeile as EMail1,d02awdatum as Ausweisende,d02bg as Benutzergruppe, d02sp1 as Sperre  FROM sisis.sisis.d02ben INNER JOIN sisis.sisis.d02onl ON d02bnr = d02obnr  WHERE d02oart=1 AND (lower(d02name) like '%s%%' OR d02bnr='%s')",strtolower($filter),$filter);
 
 
@@ -86,7 +87,8 @@ function fetchdatefromlibrarysystem($filter,$basedn="")
 
         $usersearch=substr($usersearch,1,-1);                                         // Remove ) at end of string
 
-	$usersearch=str_replace("*","",$usersearch);
+	 $usersearch=str_replace(array(";","'",'"',")","(","*","%","\\","+","/"),"",$usersearch);
+
 
 	# We use wildcards if there are any	
 
@@ -203,7 +205,7 @@ attrsonly: 0
                         if( $tag=="filter" ) $filter=trim($value);
                 }
         }
-
+	
 
 	$datafromlibsystem = fetchdatefromlibrarysystem($filter,$basedn);
 

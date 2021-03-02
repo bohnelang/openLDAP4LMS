@@ -146,7 +146,8 @@ function fetchdatefromlibrarysystem($filter,$basedn="")
 
         $usersearch=substr($usersearch,1,-1);                                         // Remove ) at end of string
 
-	$usersearch=str_replace("*","",$usersearch);
+	 $usersearch=str_replace(array(";","'",'"',")","(","*","%","\\","+","/"),"",$usersearch);
+
 
 	# We use wildcards if there are any	
 
@@ -269,7 +270,7 @@ attrsonly: 0
                         if( $tag=="filter" ) $filter=trim($value);
                 }
         }
-
+		
 
 	$datafromlibsystem = fetchdatefromlibrarysystem($filter,$basedn);
 

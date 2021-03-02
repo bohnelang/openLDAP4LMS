@@ -91,7 +91,8 @@ function fetchdatefromlibrarysystem($filter,$basedn="")
 
 	
 	$usersearch=substr($usersearch,1,-1); 					// Remove ) at end of string i
-	$usersearch=str_replace("*","",$usersearch);
+	 $usersearch=str_replace(array(";","'",'"',")","(","*","%","\\","+","/"),"",$usersearch);
+
 
 											// I do this for my example here 
 	#### Here ... fill the data from your libsystem into $returndata
@@ -221,7 +222,8 @@ attrsonly: 0
                 	if( $tag=="filter" ) $filter=trim($value);
 		}
         }
-
+		
+	
 
 	$datafromlibsystem = fetchdatefromlibrarysystem($filter,$basedn);
 

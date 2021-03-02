@@ -55,9 +55,14 @@ In 2007 I developed an openLDAP shell backend that implements the functionality 
 
 
 ## Remarks:
-This demo project is using outdated versions of openssl and openldap 2.3. Nevertheless I decided to publish this project, as openldap in version 2.3 is the last version using a real config file that is easy to understand. This issue makes it much easier for newbies and IT librarians to have success and understand what they are doing.  Using openldap 2.4 the configuration of the openldap server is located in the openldap server itself (in a separate config tree). Every modification has to be performed by ldapadd, ldapmodify, or ldapdelete command, or you need to export and import config part. This procedure is a great challenge for people who are not familiar with administrating an openldap system. Thus keep in your minds: These sources are outdated, but it is nice to have a working system/demo. 
-Keep in mind that you are using this service in a trustworthy environment only - normally your library LAN.
-If you have understood how it works and if you have too much time you can upgrade to openldap 2.4. It is not so difficult and there are some good tutorials on the net like [Converting old slapd.conf file to cn=config format](https://www.sbarjatiya.com/notes_wiki/index.php/Converting_old_slapd.conf_file_to_cn%3Dconfig_format). Keep in mind that for developing openldap 2.3 is recommended. 
+This  project is using outdated versions of openssl and openldap 2.3. Nevertheless I decided to publish this project, as openldap in version 2.3 is the last version using a real config file that is easy to understand. This issue makes it much easier for newbies and IT librarians to have success and understand what they are doing.  Using openldap 2.4 the configuration of the openldap server is located in the openldap server itself (in a separate config tree). Every modification has to be performed by ldapadd, ldapmodify, or ldapdelete command, or you need to export and import config part. This procedure is a great challenge for people who are not familiar with administrating an openldap system. Thus keep in your minds: These sources are outdated, but it is nice to have a working system/demo. 
+
+
+
+##  Migrate config file from openLDAP 2.3 to uptodate openLDAP 2.4
+If you have understood how it works and found your working config settings (for developing a working config file openldap 2.3 is strongly recommended), you can upgrade to openldap 2.4. All distibutions do have an uptodate openLDAP packague in their repositories. To upgrade from the version 2.3 config file to version 2.4 is not difficult and there are some good tutorials on the net like [Converting old slapd.conf file to cn=config format](https://www.sbarjatiya.com/notes_wiki/index.php/Converting_old_slapd.conf_file_to_cn%3Dconfig_format).
+Keep in mind that you are using this service in a trustworthy environment  - normally your library LAN and often in intranet no secure protocol is neccessary. 
+
 
 ## Run / Test System
 ### Required IT skills:
@@ -204,7 +209,6 @@ dc=lms,dc=library
 - ...
 
 ## ToDo list:
-- Remove sources for openldap, openssl, barkleydb and replace it by download from git:  git clone, git checkout 
 - Find someone who tests Shibboleth implementation. 
 - Folio cannot work with CQL queries although they should work
 

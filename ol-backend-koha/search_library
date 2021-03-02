@@ -31,7 +31,7 @@ function query_library_system($filter){
 
 	#echo "Connection established\n";
 
-
+	$filter = mysqli_real_escape_string ($filter);
 	$sql= sprintf("SELECT borrowernumber, cardnumber, surname, firstname, email, userid, DATE_FORMAT(debarred,'%%Y-%%m-%%d') as debarred, DATE_FORMAT(dateexpiry,'%%Y-%%m-%%d') as dateexpiry, (SELECT  DATE_FORMAT(expiration,'%%Y-%%m-%%d') FROM  borrower_debarments WHERE borrowers.borrowernumber=borrower_debarments.borrowernumber ORDER BY expiration DESC LIMIT 1) as expiration FROM borrowers  WHERE lower(surname) like '%s%%' OR cardnumber='%s' OR userid='%s' ", $filter,$filter,$filter );
 
 	if(empty($dbh)) die("Connot open $db_tdbs_con");
@@ -86,7 +86,8 @@ function fetchdatefromlibrarysystem($filter,$basedn="")
 
         $usersearch=substr($usersearch,1,-1);                                         // Remove ) at end of string
 
-	$usersearch=str_replace("*","",$usersearch);
+	 $usersearch=str_replace(array(";","'",'"',")","(","*","%","\\","+","/"),"",$usersearch);
+
 
 	# We use wildcards if there are any	
 
@@ -208,7 +209,7 @@ attrsonly: 0
                 }
         }
 
-
+	
 	$datafromlibsystem = fetchdatefromlibrarysystem($filter,$basedn);
 
 	mapandsenddatatoldap($datafromlibsystem,$basedn);

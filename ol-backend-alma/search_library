@@ -62,7 +62,8 @@ function fetchdatefromlibrarysystem($filter,$basedn="")
 
 	$usersearch=substr($usersearch,1,-1); 					// Remove ) at end of string 
 
-	$usersearch=str_replace("*","",$usersearch);
+	 $usersearch=str_replace(array(";","'",'"',")","(","*","%","\\","+","/"),"",$usersearch);
+
 
 	#---------------------------------------------------------------------------------
 
@@ -225,15 +226,16 @@ attrsonly: 0
 
         while ($line = fgets(STDIN)) {
 		$tt=explode(":",trim($line));
-		if(isset( $tt[0] )){ 
-			$tag =  $tt[0];
-			unset( $tt[0] );
-			$value=implode("",$tt);
-                	if( $tag=="base" ) $basedn=trim($value);
-                	if( $tag=="filter" ) $filter=trim($value);
-		}
+			if(isset( $tt[0] )){ 
+				$tag =  $tt[0];
+				unset( $tt[0] );
+				$value=implode("",$tt);
+                if( $tag=="base" ) $basedn=trim($value);
+                if( $tag=="filter" ) $filter=trim($value);
+			}
         }
-
+		
+	
 
 	$datafromlibsystem = fetchdatefromlibrarysystem($filter,$basedn);
 
