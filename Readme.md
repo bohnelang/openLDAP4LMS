@@ -52,6 +52,7 @@ In 2007 I developed an openLDAP shell backend that implements the functionality 
 - **WMS**: not yet developed
 - **Other systems**: not yet developed
 
+- **Moodle**: Although moodle is a learning managment system (and not library managment system), an implementation was easy. Have a try :-)
 
 
 ## Remarks:

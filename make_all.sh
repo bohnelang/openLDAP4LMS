@@ -76,7 +76,7 @@ echo
 echo "Installing library backend "
 echo
 
-read -p "Please enter backend (available=[demo,alma,folio,sisis,paia,koha] / default=demo):" be
+read -p "Please enter backend (available=[demo,alma,folio,sisis,paia,koha,moodle] / default=demo):" be
         if test "`echo $be`" = ""
         then
                 be='demo'
