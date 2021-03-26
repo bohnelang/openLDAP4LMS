@@ -3,7 +3,7 @@
 ### Sometimes it would be nice if library staff could directly fetch email addesses from library management systems (LMS)  within a mail program like Outlook or Thunderbird by LDAP query. 
 ### In addition to this function it would be nice if LMS could directly serve as your IDM (IDentity Management) for Shibboleth IDP (IDentity Provider) or other systems. 
 
-**Keywords**: LMS, LDAP, backend, data export, ALMA, SISIS Sunrise, PAIA, FOLIO, Outlook, Thunderbird, Apple Mail, Shibboleth, IDP, IDM
+**Keywords**: LMS, LDAP, backend, data export, ALMA, SISIS Sunrise, PAIA, FOLIO, Outlook, Thunderbird, Apple Mail, Shibboleth, IDP, IDM, Bibliothek, Bibliothekssystem, DFN, AAI
 
 
 
